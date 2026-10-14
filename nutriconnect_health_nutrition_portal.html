@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth h-full overflow-x-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NutriConnect - Unified Public Health Platform</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=SF+Pro+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                            950: '#022c22'
+                        },
+                        slate: {
+                            850: '#151f32',
+                            950: '#090d16'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        ios: ['SF Pro Display', '-apple-system', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            touch-action: manipulation;
+        }
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(30, 41, 59, 0.8);
+        }
+
+        /* Responsive Mobile Frame Constraints */
+        .app-simulator-container {
+            width: 100%;
+            max-width: 360px;
+            height: 720px;
+            max-height: 85vh;
+            margin: 0 auto;
+            border-radius: 40px;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scanner-laser {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #10b981;
+            box-shadow: 0 0 12px #10b981;
+            animation: scanAnim 2s infinite ease-in-out;
+        }
+
+        @keyframes scanAnim {
+            0% { top: 0%; }
+            50% { top: 95%; }
+            100% { top: 0%; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans antialiased min-h-full flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchMainTab('web')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                        <i class="fa-solid fa-leaf text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">NutriConnect</span>
+                        <span class="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 ml-2 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800">SSO Ecosystem</span>
+                    </div>
+                </div>
+
+                <!-- Platform Selection Tabs -->
+                <nav class="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 max-w-full overflow-x-auto">
+                    <button id="tab-btn-web" onclick="switchMainTab('web')" class="flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm">
+                        <i class="fa-solid fa-globe"></i>
+                        <span>Web Portal</span>
+                    </button>
+                    <button id="tab-btn-android" onclick="switchMainTab('android')" class="flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all">
+                        <i class="fa-brands fa-android text-emerald-500"></i>
+                        <span>Android</span>
+                    </button>
+                    <button id="tab-btn-ios" onclick="switchMainTab('ios')" class="flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all">
+                        <i class="fa-brands fa-apple text-slate-800 dark:text-slate-200"></i>
+                        <span>iOS App</span>
+                    </button>
+                </nav>
+
+                <!-- Quick Action Button -->
+                <div class="hidden md:flex items-center space-x-3">
+                    <button onclick="openDownloadModal()" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center space-x-2">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Get App Files</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <section id="view-web" class="space-y-8 block">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-900 via-slate-900 to-teal-950 text-white p-6 sm:p-10 shadow-2xl border border-emerald-800/40">
+                <div class="relative z-10 max-w-2xl space-y-4">
+                    <span class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold tracking-wide uppercase border border-emerald-500/30">
+                        <i class="fa-solid fa-bolt text-emerald-400"></i>
+                        <span>Preventive Health Innovation</span>
+                    </span>
+                    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                        Nutritional Clarity for Every Student & Family.
+                    </h1>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        Decode food labels, custom generate budget-balanced diet plans, book expert guidance, and claim canteen wellness sampling passes—all in one unified platform.
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <a href="#analyzer-section" class="px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-bold text-sm text-slate-950 transition shadow-lg shadow-emerald-500/25 flex items-center space-x-2">
+                            <i class="fa-solid fa-barcode"></i>
+                            <span>Analyze Food Risk</span>
+                        </a>
+                        <a href="#budget-section" class="px-5 py-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 font-bold text-sm text-white transition flex items-center space-x-2">
+                            <i class="fa-solid fa-calculator"></i>
+                            <span>Budget Meal Planner</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="analyzer-section" class="glass-card rounded-3xl p-6 sm:p-8 shadow-xl">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass-chart text-emerald-600"></i>
+                            <span>Food Safety & Risk Analyzer</span>
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Select from real-world food items or type custom dishes to analyze nutritional risks instantly.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-medium text-slate-400">Preset Library:</span>
+                        <select id="food-preset-select" onchange="loadPresetFood(this.value)" class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs rounded-xl px-3 py-2 border border-slate-300 dark:border-slate-700 font-medium outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="lays">Lays Classic Chips (Unhealthy)</option>
+                            <option value="samosa">Street Samosa (Unhealthy)</option>
+                            <option value="softdrink">Carbonated Cola (Unhealthy)</option>
+                            <option value="kurkure">Kurkure Masala Munch (Unhealthy)</option>
+                            <option value="sprouts" selected>Fresh Sprout Salad (Healthy)</option>
+                            <option value="idli">Steamed Idli Sambar (Healthy)</option>
+                            <option value="paneer">Grilled Paneer Tikka (Healthy)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Input Field for custom items -->
+                <div class="flex gap-2 mb-6">
+                    <input id="custom-food-input" type="text" placeholder="Or type any food item (e.g. Burger, Oats, Momos)..." class="flex-1 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-500 dark:text-white">
+                    <button onclick="analyzeCustomFood()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Scan</span>
+                    </button>
+                </div>
+
+                <!-- Analysis Results Dashboard -->
+                <div id="analyzer-result" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <!-- Left: Score Badge -->
+                    <div class="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 flex flex-col items-center justify-center text-center">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Safety Health Score</span>
+                        <div id="res-score-circle" class="w-24 h-24 rounded-full border-4 border-emerald-500 flex items-center justify-center bg-white dark:bg-slate-900 shadow-md">
+                            <span id="res-score-num" class="text-3xl font-black text-emerald-600">88</span>
+                        </div>
+                        <span id="res-score-status" class="mt-3 text-sm font-bold text-emerald-700 dark:text-emerald-400">Nutritious & Safe</span>
+                        <p id="res-food-name" class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold">Fresh Sprout Salad</p>
+                    </div>
+
+                    <!-- Center: Pros, Cons & Ingredients -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Pros -->
+                            <div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                                <h4 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span>Nutritional Benefits</span>
+                                </h4>
+                                <ul id="res-pros" class="text-xs space-y-1.5 text-slate-700 dark:text-slate-300">
+                                    <li>• High dietary plant fiber</li>
+                                    <li>• Rich in antioxidants & vitamins</li>
+                                    <li>• Zero trans-fats or added preservatives</li>
+                                </ul>
+                            </div>
+                            <!-- Cons / Warnings -->
+                            <div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                                <h4 class="text-xs font-bold text-rose-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    <span>Hidden Risk Flags</span>
+                                </h4>
+                                <ul id="res-cons" class="text-xs space-y-1.5 text-slate-700 dark:text-slate-300">
+                                    <li>• Ensure clean water washing</li>
+                                    <li>• Mild raw sodium if unseasoned</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Smart Recommendation Box -->
+                        <div class="p-4 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/40 flex items-start gap-3">
+                            <i class="fa-solid fa-lightbulb text-teal-600 dark:text-teal-400 text-base mt-0.5"></i>
+                            <div>
+                                <h5 class="text-xs font-bold text-teal-900 dark:text-teal-300">Smart Swap / Verdict</h5>
+                                <p id="res-verdict" class="text-xs text-teal-800 dark:text-teal-400 mt-0.5">
+                                    Excellent choice for daily snack replacement. High satiety index prevents unhealthy junk food cravings.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="budget-section" class="glass-card rounded-3xl p-6 sm:p-8 shadow-xl">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-coins text-amber-500"></i>
+                            <span>Dynamic Budget Diet Customizer</span>
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Adjust your daily food budget slider to generate custom nutrient-balanced meals for students.</p>
+                    </div>
+
+                    <!-- Diet Preference Toggles -->
+                    <div class="flex items-center gap-2">
+                        <button onclick="setDietType('veg')" id="diet-btn-veg" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white border border-emerald-600 transition">Veg</button>
+                        <button onclick="setDietType('nonveg')" id="diet-btn-nonveg" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition">Non-Veg</button>
+                    </div>
+                </div>
+
+                <!-- Interactive Budget Slider -->
+                <div class="p-6 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mb-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Target Daily Food Budget</span>
+                        <span id="budget-slider-val" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹120 / day</span>
+                    </div>
+                    <input id="budget-slider" type="range" min="30" max="500" value="120" step="5" oninput="updateBudgetPlanner(this.value)" class="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                    <div class="flex justify-between text-[10px] font-semibold text-slate-400 mt-2">
+                        <span>₹30 (Pocket-Friendly)</span>
+                        <span>₹150 (Standard)</span>
+                        <span>₹300 (High Protein)</span>
+                        <span>₹500 (Gourmet Fitness)</span>
+                    </div>
+                </div>
+
+                <!-- Meal Plan Breakdown Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Breakfast -->
+                    <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-sun"></i> Breakfast
+                            </span>
+                            <span id="meal-bf-cost" class="text-xs font-extrabold text-slate-700 dark:text-slate-300">~₹35</span>
+                        </div>
+                        <h4 id="meal-bf-title" class="text-base font-bold text-slate-900 dark:text-white">Oats & Banana Smoothie</h4>
+                        <p id="meal-bf-desc" class="text-xs text-slate-500 dark:text-slate-400">Whole grain oats, 1 banana, milk/water, soaked chia seeds.</p>
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between text-[11px] text-slate-400 font-medium">
+                            <span id="meal-bf-cal">~340 kcal</span>
+                            <span id="meal-bf-prot">11g Protein</span>
+                        </div>
+                    </div>
+
+                    <!-- Lunch -->
+                    <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-cloud-sun"></i> Lunch
+                            </span>
+                            <span id="meal-ln-cost" class="text-xs font-extrabold text-slate-700 dark:text-slate-300">~₹50</span>
+                        </div>
+                        <h4 id="meal-ln-title" class="text-base font-bold text-slate-900 dark:text-white">Dal Tadka & Rotis + Salad</h4>
+                        <p id="meal-ln-desc" class="text-xs text-slate-500 dark:text-slate-400">Yellow lentil dal, 3 whole wheat rotis, cucumber & onion salad.</p>
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between text-[11px] text-slate-400 font-medium">
+                            <span id="meal-ln-cal">~520 kcal</span>
+                            <span id="meal-ln-prot">18g Protein</span>
+                        </div>
+                    </div>
+
+                    <!-- Dinner -->
+                    <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-moon"></i> Dinner
+                            </span>
+                            <span id="meal-dn-cost" class="text-xs font-extrabold text-slate-700 dark:text-slate-300">~₹35</span>
+                        </div>
+                        <h4 id="meal-dn-title" class="text-base font-bold text-slate-900 dark:text-white">Mixed Veg Khichdi & Curd</h4>
+                        <p id="meal-dn-desc" class="text-xs text-slate-500 dark:text-slate-400">Rice-lentil khichdi with peas, carrots, ghee, and fresh curd.</p>
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between text-[11px] text-slate-400 font-medium">
+                            <span id="meal-dn-cal">~410 kcal</span>
+                            <span id="meal-dn-prot">14g Protein</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Expert Mentors List -->
+                <div class="glass-card rounded-3xl p-6 shadow-xl space-y-4">
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-user-doctor text-emerald-600"></i>
+                        <span>Verified Diet Consultants</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Connect with accredited nutrition professionals and student peers.</p>
+
+                    <div class="space-y-3 pt-2">
+                        <!-- Bhavya -->
+                        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base">
+                                    B
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white">Bhavya</h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Our Group Member • Peer Nutritionist</p>
+                                </div>
+                            </div>
+                            <button onclick="bookConsultation('Bhavya')" class="px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 rounded-xl hover:bg-emerald-600 hover:text-white transition">
+                                Book
+                            </button>
+                        </div>
+
+                        <!-- Dt. Ryan Fernando -->
+                        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-11 h-11 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-base">
+                                    RF
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white">Dt. Ryan Fernando</h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Chief Sports & Diet Consultant</p>
+                                </div>
+                            </div>
+                            <button onclick="bookConsultation('Dt. Ryan Fernando')" class="px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 rounded-xl hover:bg-emerald-600 hover:text-white transition">
+                                Book
+                            </button>
+                        </div>
+
+                        <!-- Dt. Pooja Makhija -->
+                        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-11 h-11 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-base">
+                                    PM
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white">Dt. Pooja Makhija</h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Clinical Dietitian & Lifestyle Specialist</p>
+                                </div>
+                            </div>
+                            <button onclick="bookConsultation('Dt. Pooja Makhija')" class="px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 rounded-xl hover:bg-emerald-600 hover:text-white transition">
+                                Book
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canteen Digital Pass Generator -->
+                <div class="glass-card rounded-3xl p-6 shadow-xl space-y-4">
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-qrcode text-emerald-600"></i>
+                        <span>Campus Canteen Sample Pass</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Claim your weekly free healthy snack sample at participating school/college cafeterias.</p>
+
+                    <div class="p-5 rounded-2xl bg-slate-900 text-white space-y-4 flex flex-col items-center justify-center text-center">
+                        <div class="bg-white p-3 rounded-2xl shadow-inner">
+                            <canvas id="qr-canvas" class="w-32 h-32"></canvas>
+                        </div>
+                        <div>
+                            <h4 id="pass-student-name" class="text-base font-bold text-white">Arjun Gupta</h4>
+                            <p class="text-xs text-emerald-400 font-mono mt-0.5">PASS ID: NC-CAMPUS-8842</p>
+                            <span class="inline-block mt-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[10px] font-bold rounded-full border border-emerald-500/30">
+                                Verified Healthy Sample Pass
+                            </span>
+                        </div>
+                        <button onclick="downloadQRPass()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Download Digital Pass</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-android" class="space-y-6 hidden">
+            <div class="text-center max-w-xl mx-auto space-y-2">
+                <span class="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+                    <i class="fa-brands fa-android"></i> Android Material Design 3 Preview
+                </span>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Interactive Mobile Application</h2>
+            </div>
+
+            <!-- Phone Frame -->
+            <div class="app-simulator-container bg-slate-950 border-[10px] border-slate-800 shadow-2xl flex flex-col">
+                <!-- Status Bar -->
+                <div class="h-6 bg-slate-900 px-4 flex items-center justify-between text-[10px] text-slate-400 font-medium z-20">
+                    <span>10:42 AM</span>
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-wifi"></i>
+                        <i class="fa-solid fa-battery-full"></i>
+                    </div>
+                </div>
+
+                <!-- Android App Bar -->
+                <div class="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between z-20">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-leaf text-emerald-400"></i>
+                        <span class="font-bold text-sm text-white">NutriConnect Android</span>
+                    </div>
+                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-bold">v2.4</span>
+                </div>
+
+                <!-- App Scrollable Screen -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 text-white">
+                    <!-- Daily Health Card -->
+                    <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-900 to-slate-900 border border-emerald-800/50 space-y-2">
+                        <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Welcome back</span>
+                        <h3 class="text-base font-bold text-white">Arjun Gupta</h3>
+                        <div class="flex items-center justify-between pt-2">
+                            <span class="text-xs text-slate-300">Daily Health Score:</span>
+                            <span class="text-sm font-black text-emerald-400">88/100</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Budget Adjuster in Mobile App -->
+                    <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-amber-400">Daily Budget Planner</span>
+                            <span id="android-budget-val" class="text-xs font-extrabold text-emerald-400">₹120 / day</span>
+                        </div>
+                        <input type="range" min="30" max="500" value="120" step="5" oninput="syncBudgetFromMobile(this.value)" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                        <p class="text-[11px] text-slate-400 leading-tight">
+                            Recommended: <span id="android-meal-suggest" class="text-white font-medium">Dal Tadka + 3 Rotis + Sprouts</span>
+                        </p>
+                    </div>
+
+                    <!-- Quick Food Scan Simulator -->
+                    <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+                        <span class="text-xs font-bold text-emerald-400">Quick Ingredient Scan</span>
+                        <div class="relative h-28 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden">
+                            <div class="scanner-laser"></div>
+                            <span class="text-xs text-slate-500 font-mono">Camera Feed Sim...</span>
+                        </div>
+                        <button onclick="switchMainTab('web'); location.href='#analyzer-section';" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition">
+                            Run Full Scan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Android Nav Bar -->
+                <div class="h-12 bg-slate-900 border-t border-slate-800 flex items-center justify-around text-slate-400 text-sm z-20">
+                    <i class="fa-solid fa-house text-emerald-400"></i>
+                    <i class="fa-solid fa-barcode"></i>
+                    <i class="fa-solid fa-user-doctor"></i>
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-ios" class="space-y-6 hidden">
+            <div class="text-center max-w-xl mx-auto space-y-2">
+                <span class="px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold">
+                    <i class="fa-brands fa-apple"></i> Apple HIG Simulator Preview
+                </span>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">iOS Mobile Experience</h2>
+            </div>
+
+            <!-- Phone Frame -->
+            <div class="app-simulator-container bg-black border-[12px] border-slate-900 shadow-2xl flex flex-col font-ios">
+                <!-- Dynamic Island -->
+                <div class="h-7 bg-black px-6 flex items-center justify-between text-[11px] text-white font-semibold z-30">
+                    <span>9:41</span>
+                    <div class="w-16 h-3.5 bg-black rounded-full border border-slate-800 flex items-center justify-center">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <i class="fa-solid fa-signal text-[10px]"></i>
+                        <i class="fa-solid fa-battery-full text-[10px]"></i>
+                    </div>
+                </div>
+
+                <!-- iOS App Scroll Content -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 text-white">
+                    <div class="flex justify-between items-end pt-2">
+                        <div>
+                            <span class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">NutriConnect</span>
+                            <h2 class="text-xl font-bold text-white">Dashboard</h2>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                            AG
+                        </div>
+                    </div>
+
+                    <!-- iOS Widget Box -->
+                    <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-300">Daily Calorie Target</span>
+                            <span class="text-xs font-bold text-emerald-400">1,850 kcal</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="w-3/4 h-full bg-emerald-500"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400">
+                            <span>Consumed: 1,270 kcal</span>
+                            <span>Remaining: 580 kcal</span>
+                        </div>
+                    </div>
+
+                    <!-- iOS Budget Synced Slider -->
+                    <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-amber-400">Daily Meal Budget</span>
+                            <span id="ios-budget-val" class="text-xs font-extrabold text-emerald-400">₹120</span>
+                        </div>
+                        <input type="range" min="30" max="500" value="120" step="5" oninput="syncBudgetFromMobile(this.value)" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                    </div>
+
+                    <!-- iOS Expert Booking Card -->
+                    <div class="p-4 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-2">
+                        <span class="text-[10px] font-bold text-emerald-400 uppercase">Consultations</span>
+                        <h4 class="text-xs font-bold text-white">Bhavya (Group Member)</h4>
+                        <p class="text-[11px] text-slate-400">Book instant peer dietary guidance.</p>
+                        <button onclick="bookConsultation('Bhavya')" class="w-full py-2 bg-white text-black rounded-xl text-xs font-bold mt-1">
+                            Book Session
+                        </button>
+                    </div>
+                </div>
+
+                <!-- iOS Tab Bar -->
+                <div class="h-14 bg-slate-950/90 backdrop-blur-md border-t border-slate-800/80 flex items-center justify-around text-slate-400 text-xs z-30">
+                    <div class="flex flex-col items-center text-emerald-400">
+                        <i class="fa-solid fa-house"></i>
+                        <span class="text-[9px] mt-0.5">Home</span>
+                    </div>
+                    <div class="flex flex-col items-center" onclick="switchMainTab('web')">
+                        <i class="fa-solid fa-barcode"></i>
+                        <span class="text-[9px] mt-0.5">Scan</span>
+                    </div>
+                    <div class="flex flex-col items-center" onclick="openDownloadModal()">
+                        <i class="fa-solid fa-download"></i>
+                        <span class="text-[9px] mt-0.5">Get Files</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Download Files Modal -->
+    <div id="modal-download" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 border border-slate-200 dark:border-slate-800">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-box-archive text-emerald-600"></i>
+                    <span>Download App Packages</span>
+                </h3>
+                <button onclick="closeDownloadModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-500 dark:text-slate-400">Generate real installation payload streams for testing on native devices.</p>
+
+            <div class="space-y-3">
+                <button onclick="downloadAPKPayload()" class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-slate-200 dark:border-slate-800 transition flex items-center justify-between group">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-brands fa-android text-2xl text-emerald-500"></i>
+                        <div class="text-left">
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-white">Android Application (.APK)</h4>
+                            <p class="text-[10px] text-slate-500">v2.4 Release • 14.2 MB</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-download text-slate-400 group-hover:text-emerald-500 text-sm"></i>
+                </button>
+
+                <button onclick="downloadIOSPayload()" class="w-full p-4 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-slate-200 dark:border-slate-800 transition flex items-center justify-between group">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-brands fa-apple text-2xl text-slate-800 dark:text-slate-200"></i>
+                        <div class="text-left">
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-white">iOS Mobile Configuration (.MOBILECONFIG)</h4>
+                            <p class="text-[10px] text-slate-500">Signed Profile • 2.8 MB</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-download text-slate-400 group-hover:text-emerald-500 text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* Database of Real-world Food Items */
+        const FOOD_DATABASE = {
+            lays: {
+                name: 'Lays Classic Potato Chips',
+                score: 32,
+                status: 'Unhealthy / High Processing',
+                statusColor: 'text-rose-500',
+                borderColor: 'border-rose-500',
+                pros: ['Quick convenience snack'],
+                cons: ['High Palm Oil content', 'Excess Sodium (600mg+)', 'High saturated fats'],
+                verdict: 'Swap with roasted makhana or baked kale chips to reduce sodium and palm oil exposure.'
+            },
+            samosa: {
+                name: 'Street Samosa (Deep Fried)',
+                score: 41,
+                status: 'High Calorie & Refined Flour',
+                statusColor: 'text-amber-500',
+                borderColor: 'border-amber-500',
+                pros: ['High energy density', 'Spiced savory taste'],
+                cons: ['Reused cooking oil hazards', 'Refined maida dough', 'Trans-fat risks'],
+                verdict: 'Limit to occasional treats. Replace with air-fried paneer snacks or boiled chana chat.'
+            },
+            softdrink: {
+                name: 'Carbonated Cola / Soda',
+                score: 18,
+                status: 'Severe Risk / Empty Calories',
+                statusColor: 'text-rose-600',
+                borderColor: 'border-rose-600',
+                pros: ['Instant sugar quick boost'],
+                cons: ['35g added sugar per bottle', 'Zero dietary nutrients', 'Erodes tooth enamel'],
+                verdict: 'Avoid for daily hydration. Replace with fresh coconut water or lemon mint sattu shake.'
+            },
+            kurkure: {
+                name: 'Kurkure Masala Munch',
+                score: 35,
+                status: 'High Sodium & Synthetic Flavors',
+                statusColor: 'text-rose-500',
+                borderColor: 'border-rose-500',
+                pros: ['Crunchy savory texture'],
+                cons: ['Excess refined vegetable oil', 'Artificial flavor enhancers', 'Spike in glycaemic load'],
+                verdict: 'Swap with spiced roasted chickpeas or roasted peanut chaat.'
+            },
+            sprouts: {
+                name: 'Fresh Sprout Salad',
+                score: 88,
+                status: 'Nutritious & Safe',
+                statusColor: 'text-emerald-600',
+                borderColor: 'border-emerald-500',
+                pros: ['High dietary plant fiber', 'Rich in antioxidants & vitamins', 'Zero trans-fats'],
+                cons: ['Ensure clean water washing', 'Mild raw sodium if unseasoned'],
+                verdict: 'Excellent choice for daily snack replacement. High satiety index prevents unhealthy junk food cravings.'
+            },
+            idli: {
+                name: 'Steamed Idli Sambar',
+                score: 82,
+                status: 'Fermented & Easy Digest',
+                statusColor: 'text-emerald-600',
+                borderColor: 'border-emerald-500',
+                pros: ['Fermented gut probiotic benefits', 'Low fat steamed cooking', 'Balanced carbs & dal protein'],
+                cons: ['Moderate glycemic index rice content'],
+                verdict: 'Great staple breakfast choice for long-lasting campus energy.'
+            },
+            paneer: {
+                name: 'Grilled Paneer Tikka',
+                score: 85,
+                status: 'High Protein & Healthy Fats',
+                statusColor: 'text-emerald-600',
+                borderColor: 'border-emerald-500',
+                pros: ['High calcium & bioavailable protein', 'Low carbohydrate index', 'Satisfying taste profile'],
+                cons: ['Watch oil spray amount during grilling'],
+                verdict: 'Ideal post-workout or dinner protein builder for students.'
+            }
+        };
+
+        let currentDietType = 'veg';
+
+        /* Switch Active Platform Tab */
+        function switchMainTab(tab) {
+            document.getElementById('view-web').classList.add('hidden');
+            document.getElementById('view-android').classList.add('hidden');
+            document.getElementById('view-ios').classList.add('hidden');
+
+            document.getElementById('tab-btn-web').className = "flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all";
+            document.getElementById('tab-btn-android').className = "flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all";
+            document.getElementById('tab-btn-ios').className = "flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all";
+
+            if (tab === 'web') {
+                document.getElementById('view-web').classList.remove('hidden');
+                document.getElementById('tab-btn-web').className = "flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm";
+            } else if (tab === 'android') {
+                document.getElementById('view-android').classList.remove('hidden');
+                document.getElementById('tab-btn-android').className = "flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm";
+            } else if (tab === 'ios') {
+                document.getElementById('view-ios').classList.remove('hidden');
+                document.getElementById('tab-btn-ios').className = "flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm";
+            }
+        }
+
+        /* Load Preset Food Item */
+        function loadPresetFood(key) {
+            const data = FOOD_DATABASE[key] || FOOD_DATABASE['sprouts'];
+            renderFoodAnalysis(data);
+        }
+
+        /* Analyze Custom Text Input */
+        function analyzeCustomFood() {
+            const query = document.getElementById('custom-food-input').value.trim().toLowerCase();
+            if (!query) return;
+
+            let score = 60;
+            let status = "Moderate Choice";
+            let pros = ["Contains essential calories"];
+            let cons = ["Check nutrition label for hidden sodium"];
+            let verdict = "Consume in moderation alongside fresh green vegetables.";
+
+            if (query.includes('burger') || query.includes('pizza') || query.includes('fries') || query.includes('momo')) {
+                score = 30;
+                status = "Unhealthy / Refined Ingredients";
+                pros = ["High immediate calories"];
+                cons = ["High saturated fat", "Refined flour dough", "High sodium"];
+                verdict = "Swap with whole-wheat homemade wraps or grilled veggie paneer snacks.";
+            } else if (query.includes('oat') || query.includes('egg') || query.includes('salad') || query.includes('fruit') || query.includes('curd')) {
+                score = 90;
+                status = "Nutritious & Highly Recommended";
+                pros = ["Rich in micronutrients & fiber", "Supports long-term digestive health"];
+                cons = ["Minimal processing risk"];
+                verdict = "Excellent nutrient-dense choice for daily consumption.";
+            }
+
+            renderFoodAnalysis({
+                name: query.toUpperCase(),
+                score: score,
+                status: status,
+                pros: pros,
+                cons: cons,
+                verdict: verdict
+            });
+        }
+
+        function renderFoodAnalysis(data) {
+            document.getElementById('res-score-num').innerText = data.score;
+            document.getElementById('res-score-status').innerText = data.status;
+            document.getElementById('res-food-name').innerText = data.name;
+            document.getElementById('res-verdict').innerText = data.verdict;
+
+            // Render Pros
+            const prosList = document.getElementById('res-pros');
+            prosList.innerHTML = '';
+            data.pros.forEach(p => {
+                prosList.innerHTML += `<li>• ${p}</li>`;
+            });
+
+            // Render Cons
+            const consList = document.getElementById('res-cons');
+            consList.innerHTML = '';
+            data.cons.forEach(c => {
+                consList.innerHTML += `<li>• ${c}</li>`;
+            });
+        }
+
+        /* Continuous Dynamic Budget Planner Engine */
+        function updateBudgetPlanner(val) {
+            document.getElementById('budget-slider-val').innerText = `₹${val} / day`;
+            document.getElementById('android-budget-val').innerText = `₹${val} / day`;
+            document.getElementById('ios-budget-val').innerText = `₹${val}`;
+            
+            // Sync all slider controls
+            document.getElementById('budget-slider').value = val;
+
+            const cost = parseInt(val);
+            let bfCost = Math.round(cost * 0.3);
+            let lnCost = Math.round(cost * 0.45);
+            let dnCost = Math.round(cost * 0.25);
+
+            document.getElementById('meal-bf-cost').innerText = `~₹${bfCost}`;
+            document.getElementById('meal-ln-cost').innerText = `~₹${lnCost}`;
+            document.getElementById('meal-dn-cost').innerText = `~₹${dnCost}`;
+
+            if (cost < 70) {
+                // Low Pocket Budget
+                document.getElementById('meal-bf-title').innerText = "Boiled Chana & Lemon";
+                document.getElementById('meal-bf-desc').innerText = "Soaked black chana with lemon juice, onion, and green chili.";
+                document.getElementById('meal-bf-cal').innerText = "~220 kcal";
+                document.getElementById('meal-bf-prot').innerText = "9g Protein";
+
+                document.getElementById('meal-ln-title').innerText = currentDietType === 'veg' ? "Yellow Dal & Rice" : "Egg Curry (1 Egg) & Rice";
+                document.getElementById('meal-ln-desc').innerText = "Steamed rice with home dal tadka or single boiled egg curry.";
+                document.getElementById('meal-ln-cal').innerText = "~420 kcal";
+                document.getElementById('meal-ln-prot').innerText = "12g Protein";
+
+                document.getElementById('meal-dn-title').innerText = "Roti & Roasted Potato Sabzi";
+                document.getElementById('meal-dn-desc').innerText = "2 whole wheat rotis with light cumin potato sabzi.";
+                document.getElementById('meal-dn-cal').innerText = "~310 kcal";
+                document.getElementById('meal-dn-prot').innerText = "7g Protein";
+
+                document.getElementById('android-meal-suggest').innerText = "Chana Chaat + Dal Rice";
+            } else if (cost < 200) {
+                // Standard Student Budget
+                document.getElementById('meal-bf-title').innerText = "Oats Banana Smoothie / Poha";
+                document.getElementById('meal-bf-desc').innerText = "Whole grain oats, 1 banana, peanuts, and seeds.";
+                document.getElementById('meal-bf-cal').innerText = "~350 kcal";
+                document.getElementById('meal-bf-prot').innerText = "12g Protein";
+
+                document.getElementById('meal-ln-title').innerText = currentDietType === 'veg' ? "Dal Tadka + Paneer & 3 Rotis" : "Chicken Curry & 3 Rotis";
+                document.getElementById('meal-ln-desc').innerText = "Balanced protein-rich curry with wheat rotis and fresh cucumber salad.";
+                document.getElementById('meal-ln-cal').innerText = "~580 kcal";
+                document.getElementById('meal-ln-prot').innerText = "24g Protein";
+
+                document.getElementById('meal-dn-title').innerText = "Mixed Veg Khichdi & Curd";
+                document.getElementById('meal-dn-desc').innerText = "Rice-lentil khichdi with ghee, veggies, and fresh bowl of curd.";
+                document.getElementById('meal-dn-cal').innerText = "~410 kcal";
+                document.getElementById('meal-dn-prot').innerText = "14g Protein";
+
+                document.getElementById('android-meal-suggest').innerText = "Oats + Dal Paneer Rotis + Khichdi";
+            } else {
+                // High Protein / Fitness Budget
+                document.getElementById('meal-bf-title').innerText = "Greek Yogurt Bowl or Eggs & Toast";
+                document.getElementById('meal-bf-desc').innerText = "High protein Greek yogurt with almonds, chia, or 3 egg omelet.";
+                document.getElementById('meal-bf-cal').innerText = "~420 kcal";
+                document.getElementById('meal-bf-prot').innerText = "22g Protein";
+
+                document.getElementById('meal-ln-title').innerText = currentDietType === 'veg' ? "Grilled Paneer Tikka Bowl & Quinoa/Rice" : "Grilled Chicken Breast & Salad";
+                document.getElementById('meal-ln-desc').innerText = "Marinated paneer/chicken breast served with sauteed veggies.";
+                document.getElementById('meal-ln-cal').innerText = "~650 kcal";
+                document.getElementById('meal-ln-prot').innerText = "38g Protein";
+
+                document.getElementById('meal-dn-title').innerText = "Soy Bean/Tofu Stir-fry & Soup";
+                document.getElementById('meal-dn-desc').innerText = "High fiber vegetable clear soup with sautéed soy chunks or tofu.";
+                document.getElementById('meal-dn-cal').innerText = "~380 kcal";
+                document.getElementById('meal-dn-prot').innerText = "26g Protein";
+
+                document.getElementById('android-meal-suggest').innerText = "High Protein Paneer/Chicken Tikka Bowl";
+            }
+        }
+
+        function syncBudgetFromMobile(val) {
+            updateBudgetPlanner(val);
+        }
+
+        function setDietType(type) {
+            currentDietType = type;
+            if (type === 'veg') {
+                document.getElementById('diet-btn-veg').className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white border border-emerald-600 transition";
+                document.getElementById('diet-btn-nonveg').className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition";
+            } else {
+                document.getElementById('diet-btn-nonveg').className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white border border-emerald-600 transition";
+                document.getElementById('diet-btn-veg').className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition";
+            }
+            const currentVal = document.getElementById('budget-slider').value;
+            updateBudgetPlanner(currentVal);
+        }
+
+        /* Render Canvas QR Code for Canteen Pass */
+        function initQRCanvas() {
+            const canvas = document.getElementById('qr-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = 120;
+            canvas.height = 120;
+
+            // Draw clean placeholder QR grid
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, 120, 120);
+
+            ctx.fillStyle = "#0f172a";
+            // Corner position boxes
+            ctx.fillRect(10, 10, 30, 30);
+            ctx.clearRect(15, 15, 20, 20);
+            ctx.fillRect(20, 20, 10, 10);
+
+            ctx.fillRect(80, 10, 30, 30);
+            ctx.clearRect(85, 15, 20, 20);
+            ctx.fillRect(90, 20, 10, 10);
+
+            ctx.fillRect(10, 80, 30, 30);
+            ctx.clearRect(15, 85, 20, 20);
+            ctx.fillRect(20, 90, 10, 10);
+
+            // Random QR noise pixels
+            for (let i = 0; i < 40; i++) {
+                let x = Math.floor(Math.random() * 10) * 10 + 10;
+                let y = Math.floor(Math.random() * 10) * 10 + 10;
+                ctx.fillRect(x, y, 6, 6);
+            }
+        }
+
+        function downloadQRPass() {
+            const canvas = document.getElementById('qr-canvas');
+            const link = document.createElement('a');
+            link.download = 'Arjun_Gupta_NutriConnect_Pass.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function bookConsultation(name) {
+            alert(`Consultation Booking Requested with ${name}! A peer representative will connect with your student portal.`);
+        }
+
+        /* Modal Downloads */
+        function openDownloadModal() {
+            document.getElementById('modal-download').classList.remove('hidden');
+            document.getElementById('modal-download').classList.add('flex');
+        }
+
+        function closeDownloadModal() {
+            document.getElementById('modal-download').classList.add('hidden');
+            document.getElementById('modal-download').classList.remove('flex');
+        }
+
+        function downloadAPKPayload() {
+            const content = "NutriConnect Android APK Release Stream Payload v2.4";
+            const blob = new Blob([content], { type: 'application/vnd.android.package-archive' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "NutriConnect_v2.4_release.apk";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadIOSPayload() {
+            const content = "NutriConnect iOS Mobile Configuration Signed Profile v2.4";
+            const blob = new Blob([content], { type: 'application/x-apple-asn1-signed-data' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "NutriConnect_iOS_Profile.mobileconfig";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        /* Window Load Initialization */
+        window.onload = function() {
+            initQRCanvas();
+            loadPresetFood('sprouts');
+            updateBudgetPlanner(120);
+        };
+    </script>
+</body>
+</html>
